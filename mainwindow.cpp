@@ -27,35 +27,58 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setValue(0);
 
     menuBar()->setFont(QFont(tr("微软雅黑"), 10, 75, 1));
-    m_optMenu = menuBar()->addMenu(tr("数据选择"));
-    m_SelAction = new QAction(tr("选择样本集"),this);
-    m_SelAction->setShortcuts(QKeySequence::New);
-    m_SelAction->setStatusTip(tr("选择包含图片的文件夹"));
-    connect(m_SelAction, &QAction::triggered, this, &MainWindow::showImage);
-    m_optMenu->addAction(m_SelAction);
+    m_fileMenu = menuBar()->addMenu(tr("File"));
+    m_optMenu = menuBar()->addMenu(tr("Option"));
+
+    m_SelAction = new QAction(tr("&Select Image Sets"),this);
+    m_SelAction->setStatusTip(tr("select a directory including images"));
+    connect(m_SelAction, &QAction::triggered, this, &MainWindow::getSetInfo);
+    m_fileMenu->addAction(m_SelAction);
+
+    m_FlipAction = new QAction(tr("&Flip Horizontally"),this);
+    m_FlipAction->setStatusTip(tr("Flip samples at the horizontal orientation"));
+    connect(m_FlipAction, &QAction::triggered, this, &MainWindow::flipResponse);
+    m_optMenu->addAction(m_FlipAction);
+
+    m_CropAction = new QAction(tr("&Crop ROI"),this);
+    m_CropAction->setStatusTip(tr("Flip samples at the horizontal orientation"));
+    connect(m_FlipAction, &QAction::triggered, this, &MainWindow::flipResponse);
+    m_optMenu->addAction(m_CropAction);
+
+    m_flipThread = new QFlipThread();
+    m_flipThread->setFunc(&m_sampleDirPath, &m_listSample);
+    connect(m_flipThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
+
 }
 
 MainWindow::~MainWindow()
 {
+    delete m_SelAction;
+    delete m_FlipAction;
+    delete m_flipThread;
     delete ui;
 }
 
+void MainWindow::flipResponse(){
+    QDir flipDir;
+    if(!flipDir.exists("flip")){
+        flipDir.mkdir("flip");
+    }
+    m_flipThread->start();
 
-void MainWindow::showImage()
-{
+}
+
+void MainWindow::flipNextImg(int idx){
+    ui->statusBar->showMessage(m_listSample[idx-1]);
+    ui->progressBar->setValue(idx);
+}
+
+
+
+void MainWindow::getSetInfo(){
     m_listSample.clear();
     m_curSelImg = 0;
     ui->progressBar->reset();
-
-    QDir posDir;
-    if(!posDir.exists("pos")){
-        posDir.mkdir("pos");
-    }
-
-    QDir negDir;
-    if(!negDir.exists("neg")){
-        negDir.mkdir("neg");
-    }
 
     QFileDialog dialog(this, "请选择包含图片的文件夹");
     dialog.setFileMode(QFileDialog::DirectoryOnly);
@@ -73,21 +96,39 @@ void MainWindow::showImage()
         m_listSample = dir.entryList();
 
         if(!m_listSample.empty()){
-            update();
-            QString strImgPath = strDirPath[0] + "/" + m_listSample[m_curSelImg];
-            QImage img(strImgPath);
-            //QImage sImg = img.scaled(ui->imageView->size());
-            ui->imageView->setImgSrc(img,m_listSample[m_curSelImg]);
             ui->progressBar->setRange(0, m_listSample.size());
             ui->progressBar->setValue(0);
+
+            QString strMsg("");
+            strMsg.sprintf("the current directory has %d images", m_listSample.size());
+            ui->statusBar->showMessage(strMsg);
         }
         else{
             ui->statusBar->showMessage("you had selected a empty directory without an image");
             return ;
         }
     }
+}
 
-    ui->statusBar->showMessage("ready");
+
+void MainWindow::showImage()
+{
+    QDir posDir;
+    if(!posDir.exists("pos")){
+        posDir.mkdir("pos");
+    }
+
+    QDir negDir;
+    if(!negDir.exists("neg")){
+        negDir.mkdir("neg");
+    }
+
+    if(!m_listSample.empty()){
+        update();
+        QString strImgPath = m_sampleDirPath + "/" + m_listSample[m_curSelImg];
+        QImage img(strImgPath);
+        ui->imageView->setImgSrc(img,m_listSample[m_curSelImg]);
+    }
 }
 
 void MainWindow::nextImage()
@@ -116,3 +157,5 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     emit mouse_move(event->pos());
 }
+
+

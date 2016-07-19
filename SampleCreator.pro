@@ -15,10 +15,12 @@ VERSION = 1.0.0
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qclicklabel.cpp
+    qclicklabel.cpp \
+    qflipthread.cpp
 
 HEADERS  += mainwindow.h \
-    qclicklabel.h
+    qclicklabel.h \
+    qflipthread.h
 
 FORMS    += mainwindow.ui
 

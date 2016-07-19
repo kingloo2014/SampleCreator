@@ -6,6 +6,7 @@
 #include <QPoint>
 #include <QMenu>
 #include <QAction>
+#include "qflipthread.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,17 +29,30 @@ signals:
 protected:
     void mouseMoveEvent(QMouseEvent *event);
 
+private:
+
+
 public slots:
     void showImage();
     void nextImage();
-
-private:
+    void flipResponse();
+    void getSetInfo();
+    void flipNextImg(int idx);
+public:
     QStringList m_listSample;
     QString m_sampleDirPath;
+
+private:
     int m_curSelImg;
 
-    QMenu *m_optMenu;
+    QMenu *m_fileMenu;
     QAction *m_SelAction;
+
+    QMenu *m_optMenu;
+    QAction *m_CropAction;
+    QAction *m_FlipAction;
+
+    QFlipThread* m_flipThread;
 };
 
 #endif // MAINWINDOW_H

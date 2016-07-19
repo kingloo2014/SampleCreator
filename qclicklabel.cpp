@@ -236,3 +236,4 @@ void QClickLabel::getMousePos(QPoint pos)
     qDebug() << "tracking\n";
 }
 
+
