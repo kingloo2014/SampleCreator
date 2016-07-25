@@ -4,7 +4,6 @@
 #include <QPoint>
 #include <QMouseEvent>
 #include <QFileDialog>
-#include <QDebug>
 #include <QMenu>
 #include <QMenuBar>
 
@@ -36,21 +35,33 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_SelAction, &QAction::triggered, this, &MainWindow::getSetInfo);
     m_fileMenu->addAction(m_SelAction);
 
-    m_FlipAction = new QAction(tr("&Flip Horizontally"),this);
+    m_FlipAction = new QAction(tr("&Flip"),this);
     m_FlipAction->setIcon(QIcon(":/res/flip.png"));
     m_FlipAction->setStatusTip(tr("Flip samples at the horizontal orientation"));
     connect(m_FlipAction, &QAction::triggered, this, &MainWindow::flipResponse);
     m_optMenu->addAction(m_FlipAction);
 
-    m_CropAction = new QAction(tr("&Crop ROI"),this);
+    m_CropAction = new QAction(tr("&Crop"),this);
     m_CropAction->setIcon(QIcon(":/res/crop.png"));
-    m_CropAction->setStatusTip(tr("Flip samples at the horizontal orientation"));
-    connect(m_FlipAction, &QAction::triggered, this, &MainWindow::showImage);
+    m_CropAction->setStatusTip(tr("Crop intresting regions"));
+    connect(m_CropAction, &QAction::triggered, this, &MainWindow::showImage);
     m_optMenu->addAction(m_CropAction);
 
-    m_flipThread = new QFlipThread();
+
+    m_shuffleAction = new QAction(tr("&Shuffle"),this);
+    m_shuffleAction->setIcon(QIcon(":/res/crop.png"));
+    m_shuffleAction->setStatusTip(tr("Reorder the sample randomly"));
+    connect(m_shuffleAction, &QAction::triggered, this, &MainWindow::shuffeSamples);
+    m_optMenu->addAction(m_shuffleAction);
+
+    m_flipThread = new QFlipThread(FLIP);
     m_flipThread->setFunc(&m_sampleDirPath, &m_listSample);
     connect(m_flipThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
+
+
+    m_shuffleThread = new QFlipThread(SHUFFLE);
+    m_shuffleThread->setFunc(&m_sampleDirPath, &m_listSample);
+    connect(m_shuffleThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
 
 }
 
@@ -59,6 +70,8 @@ MainWindow::~MainWindow()
     delete m_SelAction;
     delete m_FlipAction;
     delete m_flipThread;
+    delete m_CropAction;
+    delete m_optMenu;
     delete ui;
 }
 
@@ -76,6 +89,10 @@ void MainWindow::flipNextImg(int idx){
     ui->progressBar->setValue(idx);
 }
 
+void MainWindow::shuffeSamples(){
+    m_shuffleThread->start();
+}
+
 
 
 void MainWindow::getSetInfo(){
@@ -89,7 +106,6 @@ void MainWindow::getSetInfo(){
     {
         QStringList strDirPath = dialog.selectedFiles();
         m_sampleDirPath = strDirPath[0];
-        qDebug() << *strDirPath.begin();
 
         QDir dir(strDirPath[0]);
         dir.setFilter(QDir::Files);
@@ -99,7 +115,7 @@ void MainWindow::getSetInfo(){
         m_listSample = dir.entryList();
 
         if(!m_listSample.empty()){
-            ui->progressBar->setRange(0, m_listSample.size());
+            ui->progressBar->setRange(0, m_listSample.size()-1);
             ui->progressBar->setValue(0);
 
             QString strMsg("");

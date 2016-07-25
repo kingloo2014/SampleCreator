@@ -233,7 +233,6 @@ bool QClickLabel::posInRect(const QPoint &pos, const QRect &rect)
 
 void QClickLabel::getMousePos(QPoint pos)
 {
-    qDebug() << "tracking\n";
 }
 
 

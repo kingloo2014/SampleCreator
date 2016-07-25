@@ -8,6 +8,7 @@
 #include <QAction>
 #include "qflipthread.h"
 
+
 namespace Ui {
 class MainWindow;
 }
@@ -38,6 +39,7 @@ public slots:
     void flipResponse();
     void getSetInfo();
     void flipNextImg(int idx);
+    void shuffeSamples();
 public:
     QStringList m_listSample;
     QString m_sampleDirPath;
@@ -51,8 +53,10 @@ private:
     QMenu *m_optMenu;
     QAction *m_CropAction;
     QAction *m_FlipAction;
+    QAction *m_shuffleAction;
 
     QFlipThread* m_flipThread;
+    QFlipThread *m_shuffleThread;
 };
 
 #endif // MAINWINDOW_H
