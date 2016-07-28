@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu = menuBar()->addMenu(tr("File"));
     m_optMenu = menuBar()->addMenu(tr("Option"));
 
-    m_SelAction = new QAction(tr("&Select Image Sets"),this);
+    m_SelAction = new QAction(tr("&Load"),this);
     m_SelAction->setIcon(QIcon(":/res/addFile.png"));
     m_SelAction->setStatusTip(tr("select a directory including images"));
     connect(m_SelAction, &QAction::triggered, this, &MainWindow::getSetInfo);
@@ -54,10 +54,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_shuffleAction, &QAction::triggered, this, &MainWindow::shuffeSamples);
     m_optMenu->addAction(m_shuffleAction);
 
+    m_rotateAction = new QAction(tr("&Rotate"),this);
+    m_rotateAction->setIcon(QIcon(":/res/crop.png"));
+    m_rotateAction->setStatusTip(tr("Rotate the sample"));
+    connect(m_rotateAction, &QAction::triggered, this, &MainWindow::rotateSamples);
+    m_optMenu->addAction(m_rotateAction);
+
     m_flipThread = new QFlipThread(FLIP);
     m_flipThread->setFunc(&m_sampleDirPath, &m_listSample);
     connect(m_flipThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
 
+    m_rotateThread = new QFlipThread(ROTATE);
+    m_rotateThread->setFunc(&m_sampleDirPath, &m_listSample);
+    connect(m_rotateThread, &QFlipThread::rotateSingle, this, &MainWindow::rotateNext);
 
     m_shuffleThread = new QFlipThread(SHUFFLE);
     m_shuffleThread->setFunc(&m_sampleDirPath, &m_listSample);
@@ -75,6 +84,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::rotateNext(const QImage& img){
+    ui->imageView->setImgSrc(img,"");
+}
+
 void MainWindow::flipResponse(){
     QDir flipDir;
     if(!flipDir.exists("flip")){
@@ -82,6 +95,10 @@ void MainWindow::flipResponse(){
     }
     m_flipThread->start();
 
+}
+
+void MainWindow::rotateSamples(){
+    m_rotateThread->start();
 }
 
 void MainWindow::flipNextImg(int idx){

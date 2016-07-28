@@ -1,4 +1,5 @@
 #include "qflipthread.h"
+#include <QPixmap>
 
 QFlipThread::QFlipThread(QObject *parent):QThread(parent),
     m_type(NULL_TYPE)
@@ -26,6 +27,9 @@ void QFlipThread::run(){
         break;
     case SHUFFLE:
         shuffleImages(*m_pImgList);
+        break;
+    case ROTATE:
+        rotateSets(*m_pImgList);
         break;
     default:
         break;
@@ -62,6 +66,21 @@ void QFlipThread::shuffleImages(const QStringList& list){
         QString strName("");
         strName = *m_pImgDir + "/" + list[vecIdx[i]];
         img.save(strName);
+        Q_EMIT nextImage(i);
+    }
+}
+
+void QFlipThread::rotateSets(const QStringList& list){
+    for(int i = 0; i < list.size(); i++){
+        QString strSrcName("");
+        strSrcName = *m_pImgDir + "/" + list[i];
+        QPixmap img(strSrcName);
+        for(int r = -60; r < 60; r+= 5){
+            QMatrix trans_mat;
+            trans_mat.rotate(r);
+            QPixmap rot_img = img.transformed(trans_mat);
+            Q_EMIT rotateSingle(rot_img.toImage());
+        }
         Q_EMIT nextImage(i);
     }
 }

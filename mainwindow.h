@@ -40,6 +40,8 @@ public slots:
     void getSetInfo();
     void flipNextImg(int idx);
     void shuffeSamples();
+    void rotateSamples();
+    void rotateNext(const QImage& img);
 public:
     QStringList m_listSample;
     QString m_sampleDirPath;
@@ -54,9 +56,11 @@ private:
     QAction *m_CropAction;
     QAction *m_FlipAction;
     QAction *m_shuffleAction;
+    QAction *m_rotateAction;
 
     QFlipThread* m_flipThread;
     QFlipThread *m_shuffleThread;
+    QFlipThread *m_rotateThread;
 };
 
 #endif // MAINWINDOW_H

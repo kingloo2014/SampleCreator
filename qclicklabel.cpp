@@ -144,6 +144,7 @@ void QClickLabel::setImgSrc(const QImage& img, const QString& strImgName)
 {
     m_img = img;
     m_strCurImgName = strImgName;
+    repaint();
 }
 
 void QClickLabel::paintEvent(QPaintEvent *)
