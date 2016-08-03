@@ -16,13 +16,16 @@ VERSION = 1.0.0
 SOURCES += main.cpp\
         mainwindow.cpp \
     qclicklabel.cpp \
-    qflipthread.cpp
+    qflipthread.cpp \
+    qsizewidget.cpp
 
 HEADERS  += mainwindow.h \
     qclicklabel.h \
-    qflipthread.h
+    qflipthread.h \
+    qsizewidget.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    qsizewidget.ui
 
 
 RESOURCES += \

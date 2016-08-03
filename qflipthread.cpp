@@ -2,7 +2,9 @@
 #include <QPixmap>
 
 QFlipThread::QFlipThread(QObject *parent):QThread(parent),
-    m_type(NULL_TYPE)
+    m_type(NULL_TYPE),
+    m_rsWidth(0),
+    m_rsHeight(0)
 {
 }
 
@@ -31,12 +33,18 @@ void QFlipThread::run(){
     case ROTATE:
         rotateSets(*m_pImgList);
         break;
+    case RESIZE:
+        resizeSets(*m_pImgList, m_rsWidth, m_rsHeight);
+        break;
     default:
         break;
     }
-
-
 }
+
+ void QFlipThread::getResizePara(int w, int h){
+     m_rsHeight = h;
+     m_rsWidth = w;
+ }
 
 QImage QFlipThread::flipImage(const QImage& img_src, bool horizon)
 {
@@ -79,6 +87,10 @@ void QFlipThread::rotateSets(const QStringList& list){
             QMatrix trans_mat;
             trans_mat.rotate(r);
             QPixmap rot_img = img.transformed(trans_mat);
+
+            QString strFlipName("");
+            strFlipName.sprintf("rotate/rot_%d_%s",r,list[i].toUtf8().data());
+            rot_img.save(strFlipName);
             Q_EMIT rotateSingle(rot_img.toImage());
         }
         Q_EMIT nextImage(i);
@@ -89,3 +101,21 @@ void QFlipThread::setFunc(QString* pImgDir, QStringList* pImgList){
         m_pImgDir = pImgDir;
         m_pImgList = pImgList;
     }
+
+QImage QFlipThread::resizeImage(const QImage& img_src, int w, int h){
+    return img_src.scaled(QSize(w,h));
+}
+
+void QFlipThread::resizeSets(const QStringList& list, int w, int h){
+    for(int i = 0; i < list.size(); i++){
+        QString strSrcName("");
+        strSrcName = *m_pImgDir + "/" + list[i];
+        QImage img(strSrcName);
+        QImage rs_img = resizeImage(img,w,h);
+
+        QString strFlipName("");
+        strFlipName.sprintf("resize/rs_%s",list[i].toUtf8().data());
+        rs_img.save(strFlipName);
+        Q_EMIT nextImage(i);
+    }
+}

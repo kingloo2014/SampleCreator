@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QAction>
 #include "qflipthread.h"
+#include "qsizewidget.h"
 
 
 namespace Ui {
@@ -42,10 +43,12 @@ public slots:
     void shuffeSamples();
     void rotateSamples();
     void rotateNext(const QImage& img);
+    void resizeSamples();
+    void beginResize(int width, int height);
 public:
     QStringList m_listSample;
     QString m_sampleDirPath;
-
+    QSizeWidget m_sizeWidget;
 private:
     int m_curSelImg;
 
@@ -56,11 +59,16 @@ private:
     QAction *m_CropAction;
     QAction *m_FlipAction;
     QAction *m_shuffleAction;
+    QAction *m_resizeAction;
     QAction *m_rotateAction;
 
     QFlipThread* m_flipThread;
     QFlipThread *m_shuffleThread;
     QFlipThread *m_rotateThread;
+    QFlipThread *m_resizeThread;
+
+    int m_nNormWidth;
+    int m_nNormHeight;
 };
 
 #endif // MAINWINDOW_H

@@ -9,6 +9,7 @@ enum type_thread{
     FLIP = 0,
     SHUFFLE,
     ROTATE,
+    RESIZE,
     NULL_TYPE
 };
 
@@ -25,18 +26,27 @@ protected:
     virtual void run();
 
 private:
-     QImage flipImage(const QImage& img_src, bool horizon = true);
+
      void shuffleImages(const QStringList& list);
      void rotateSets(const QStringList& list);
+     void resizeSets(const QStringList& list, int w, int h);
+
+private:
+     QImage flipImage(const QImage& img_src, bool horizon = true);
      QImage rotateImage(const QImage& img_src, qreal angle);
+     QImage resizeImage(const QImage& img_src, int w, int h);
 private:
     QString* m_pImgDir;
     QStringList* m_pImgList;
     type_thread m_type;
+public:
+    int m_rsWidth;
+    int m_rsHeight;
 signals:
     void nextImage(int idx);
     void rotateSingle(const QImage& img);
-public slots:
+public slots:    
+    void getResizePara(int w, int h);
 };
 
 #endif // QFLIPTHREAD_H

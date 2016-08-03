@@ -47,12 +47,22 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_CropAction, &QAction::triggered, this, &MainWindow::showImage);
     m_optMenu->addAction(m_CropAction);
 
+    m_resizeThread = new QFlipThread(RESIZE);
+    m_resizeThread->setFunc(&m_sampleDirPath, &m_listSample);
+    connect(&m_sizeWidget, SIGNAL(CommitResize(int,int)), this, SLOT(beginResize(int, int)));
+    connect(m_resizeThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
 
     m_shuffleAction = new QAction(tr("&Shuffle"),this);
     m_shuffleAction->setIcon(QIcon(":/res/crop.png"));
     m_shuffleAction->setStatusTip(tr("Reorder the sample randomly"));
     connect(m_shuffleAction, &QAction::triggered, this, &MainWindow::shuffeSamples);
     m_optMenu->addAction(m_shuffleAction);
+
+    m_resizeAction = new QAction(tr("&Resize"),this);
+    m_resizeAction->setIcon(QIcon(":/res/crop.png"));
+    m_resizeAction->setStatusTip(tr("resize samples"));
+    connect(m_resizeAction, &QAction::triggered, this, &MainWindow::resizeSamples);
+    m_optMenu->addAction(m_resizeAction);
 
     m_rotateAction = new QAction(tr("&Rotate"),this);
     m_rotateAction->setIcon(QIcon(":/res/crop.png"));
@@ -72,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_shuffleThread->setFunc(&m_sampleDirPath, &m_listSample);
     connect(m_shuffleThread, SIGNAL(nextImage(int)), this, SLOT(flipNextImg(int)));
 
+    m_sizeWidget.setModal(true);
 }
 
 MainWindow::~MainWindow()
@@ -98,6 +109,10 @@ void MainWindow::flipResponse(){
 }
 
 void MainWindow::rotateSamples(){
+    QDir flipDir;
+    if(!flipDir.exists("rotate")){
+        flipDir.mkdir("rotate");
+    }
     m_rotateThread->start();
 }
 
@@ -110,7 +125,21 @@ void MainWindow::shuffeSamples(){
     m_shuffleThread->start();
 }
 
+void MainWindow::resizeSamples()
+{
+    QDir resizeDir;
+    if(!resizeDir.exists("resize")){
+        resizeDir.mkdir("resize");
+    }
+    m_sizeWidget.show();
+}
 
+void MainWindow::beginResize(int width, int height)
+{
+    m_resizeThread->m_rsWidth = width;
+    m_resizeThread->m_rsHeight = height;
+    m_resizeThread->start();
+}
 
 void MainWindow::getSetInfo(){
     m_listSample.clear();
